@@ -13,7 +13,7 @@ type PSQLClient struct {
 	Db *sqlx.DB
 }
 
-func NewPostgresConnection(cfg Config, runMigrations bool, absoluteLink string) (client *PSQLClient, err error) {
+func NewPostgresConnection(cfg Config) (client *PSQLClient, err error) {
 	var database *sqlx.DB
 
 	if err := DoWithTries(func() error {
@@ -36,15 +36,24 @@ func NewPostgresConnection(cfg Config, runMigrations bool, absoluteLink string) 
 		return nil, err
 	}
 
+	return &PSQLClient{
+		Db: database,
+	}, nil
+}
+
+func NewPostgresConnectionWithMigrations(cfg Config, runMigrations bool, absoluteLink string) (client *PSQLClient, err error) {
+	client, err = NewPostgresConnection(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	if runMigrations {
-		if err := UpMigrations(database, cfg.DBName, absoluteLink); err != nil {
+		if err := UpMigrations(client.Db, cfg.DBName, absoluteLink); err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	return &PSQLClient{
-		Db: database,
-	}, nil
+	return client, nil
 }
 
 func UpMigrations(sqlxDb *sqlx.DB, dbName string, absoluteLink string) error {
@@ -73,8 +82,11 @@ func DownMigrations(sqlxDb *sqlx.DB, dbName string, absoluteLink string) error {
 	}
 	//pwd, _ := os.Getwd()
 	m, err := migrate.NewWithDatabaseInstance(
-		absoluteLink, //говнокод
+		absoluteLink,
 		dbName, driver)
+	if err != nil {
+		return err
+	}
 	if err := m.Down(); err != nil {
 		return err
 	}

@@ -68,14 +68,6 @@ func NewTestPostgresConnection(host, port, user, password, dbName, absoluteLink 
 	return database, nil
 }
 
-const (
-	host     = "localhost"
-	port     = "5434"
-	user     = "thestrikem"
-	password = "123"
-	dbName   = "test"
-)
-
 func MustTestPostgresInstance(host, port, user, password, dbName, absoluteLink string) *sqlx.DB {
 	conn, err := NewTestPostgresConnection(host, port, user, password, dbName, absoluteLink)
 	if err != nil {
