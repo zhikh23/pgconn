@@ -41,16 +41,14 @@ func NewPostgresConnection(cfg Config) (client *PSQLClient, err error) {
 	}, nil
 }
 
-func NewPostgresConnectionWithMigrations(cfg Config, runMigrations bool, absoluteLink string) (client *PSQLClient, err error) {
+func NewPostgresConnectionWithMigrations(cfg Config, absoluteLink string) (client *PSQLClient, err error) {
 	client, err = NewPostgresConnection(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	if runMigrations {
-		if err := UpMigrations(client.Db, cfg.DBName, absoluteLink); err != nil {
-			log.Fatal(err)
-		}
+	if err := UpMigrations(client.Db, cfg.DBName, absoluteLink); err != nil {
+		log.Fatal(err)
 	}
 
 	return client, nil
