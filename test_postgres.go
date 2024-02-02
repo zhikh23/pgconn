@@ -6,8 +6,32 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
+	"log"
 	"strings"
 )
+
+func NewTestPostgresConnectionWithString(connectionURL string, runMigrations bool, absoluteLink string) (*sqlx.DB, error) {
+
+	database, err := sqlx.ConnectContext(context.Background(), "pgx", connectionURL)
+	if err != nil {
+		return nil, err
+	}
+
+	if runMigrations {
+		if err = UpMigrations(database, dbName, absoluteLink); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if err != nil && !strings.Contains(err.Error(), "no change") {
+		fmt.Println("Migration error: " + err.Error())
+	}
+	if err = database.Ping(); err != nil {
+		return nil, err
+	}
+
+	return database, nil
+}
 
 func NewTestPostgresConnection(host, port, user, password, dbName, absoluteLink string) (*sqlx.DB, error) {
 	connectionURL := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s",
