@@ -10,10 +10,9 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
-	"strings"
 )
 
-func NewTestPostgresConnectionWithString(connectionURL string, migrationURL string) (*sqlx.DB, error) {
+func NewTestPostgresConnectionWithMigrations(connectionURL string, migrationURL string) (*sqlx.DB, error) {
 
 	database, err := sqlx.ConnectContext(context.Background(), "pgx", connectionURL)
 	if err != nil {
@@ -41,43 +40,5 @@ func MustUpTestMigrations(sourceURL, connectionString string) {
 		} else {
 			panic(fmt.Sprintf("error apply migrations: %s", err.Error()))
 		}
-	}
-}
-
-func NewTestPostgresConnection(host, port, user, password, dbName, absoluteLink string) (*sqlx.DB, error) {
-	connectionURL := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s",
-		host,
-		port,
-		user,
-		password,
-		dbName,
-	)
-
-	database, err := sqlx.ConnectContext(context.Background(), "pgx", connectionURL)
-	if err != nil {
-		return nil, err
-	}
-	err = UpMigrations(database, dbName, absoluteLink)
-	if err != nil && !strings.Contains(err.Error(), "no change") {
-		fmt.Println("Migration error: " + err.Error())
-	}
-	if err = database.Ping(); err != nil {
-		return nil, err
-	}
-
-	return database, nil
-}
-
-func MustTestPostgresInstance(host, port, user, password, dbName, absoluteLink string) *sqlx.DB {
-	conn, err := NewTestPostgresConnection(host, port, user, password, dbName, absoluteLink)
-	if err != nil {
-		panic("Postgres instance: " + err.Error())
-	}
-	return conn
-}
-
-func MustTestDownMigrations(db *sqlx.DB, dbName, absoluteLink string) {
-	if err := DownMigrations(db, dbName, absoluteLink); err != nil {
-		panic("Down migration: " + err.Error())
 	}
 }

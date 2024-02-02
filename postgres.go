@@ -1,11 +1,8 @@
 package postgres
 
 import (
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
-	"log"
 	"time"
 )
 
@@ -39,56 +36,6 @@ func NewPostgresConnection(cfg Config) (client *PSQLClient, err error) {
 	return &PSQLClient{
 		Db: database,
 	}, nil
-}
-
-func NewPostgresConnectionWithMigrations(cfg Config, absoluteLink string) (client *PSQLClient, err error) {
-	client, err = NewPostgresConnection(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := UpMigrations(client.Db, cfg.DBName, absoluteLink); err != nil {
-		log.Fatal(err)
-	}
-
-	return client, nil
-}
-
-func UpMigrations(sqlxDb *sqlx.DB, dbName string, absoluteLink string) error {
-	driver, err := postgres.WithInstance(sqlxDb.DB, &postgres.Config{})
-	if err != nil {
-		return err
-	}
-
-	//pwd, _ := os.Getwd()
-	m, err := migrate.NewWithDatabaseInstance(
-		absoluteLink,
-		dbName, driver)
-	if err != nil {
-		return err
-	}
-	if err := m.Up(); err != nil {
-		log.Fatal(err)
-	}
-	return nil
-}
-
-func DownMigrations(sqlxDb *sqlx.DB, dbName string, absoluteLink string) error {
-	driver, err := postgres.WithInstance(sqlxDb.DB, &postgres.Config{})
-	if err != nil {
-		return err
-	}
-	//pwd, _ := os.Getwd()
-	m, err := migrate.NewWithDatabaseInstance(
-		absoluteLink,
-		dbName, driver)
-	if err != nil {
-		return err
-	}
-	if err := m.Down(); err != nil {
-		return err
-	}
-	return nil
 }
 
 func DoWithTries(fn func() error, attempts int, delay time.Duration) (err error) {
