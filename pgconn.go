@@ -22,8 +22,12 @@ func ConnectWithTries(cfg *ConnConfig, settings *ConnSettings, attempts int, att
 	return
 }
 
-func Connect(cfg *ConnConfig, settings *ConnSettings) (db *sqlx.DB, err error) {
-	db, err = sqlx.Open("pgx", cfg.Url())
+func Connect(cfg *ConnConfig, settingsOrNil *ConnSettings) (db *sqlx.DB, err error) {
+	return ConnectWithUrl(cfg.Url(), settingsOrNil)
+}
+
+func ConnectWithUrl(url string, settingsOrNil *ConnSettings) (db *sqlx.DB, err error) {
+	db, err = sqlx.Open("pgx", url)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +36,9 @@ func Connect(cfg *ConnConfig, settings *ConnSettings) (db *sqlx.DB, err error) {
 		return nil, err
 	}
 
-	setupConnection(db, settings)
+	if settingsOrNil != nil {
+		setupConnection(db, settingsOrNil)
+	}
 
 	return db, nil
 }
