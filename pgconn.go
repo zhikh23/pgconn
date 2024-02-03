@@ -11,22 +11,11 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func ConnectWithTries(cfg *ConnConfig, settings *ConnSettings, attempts int, attemptDuration time.Duration) (db *sqlx.DB, err error) {
-	for ; attempts > 0; attempts-- {
-		db, err = Connect(cfg, settings)
-		if err == nil {
-			return
-		}
-		time.Sleep(attemptDuration)
-	}
-	return
-}
-
 func Connect(cfg *ConnConfig, settingsOrNil *ConnSettings) (db *sqlx.DB, err error) {
-	return ConnectWithUrl(cfg.Url(), settingsOrNil)
+	return ConnectUsingUrl(cfg.Url(), settingsOrNil)
 }
 
-func ConnectWithUrl(url string, settingsOrNil *ConnSettings) (db *sqlx.DB, err error) {
+func ConnectUsingUrl(url string, settingsOrNil *ConnSettings) (db *sqlx.DB, err error) {
 	db, err = sqlx.Open("pgx", url)
 	if err != nil {
 		return nil, err
@@ -43,6 +32,21 @@ func ConnectWithUrl(url string, settingsOrNil *ConnSettings) (db *sqlx.DB, err e
 	return db, nil
 }
 
+func ConnectWithTries(cfg *ConnConfig, settings *ConnSettings, attempts int, attemptDuration time.Duration) (*sqlx.DB, error) {
+	return ConnectWithTriesUsingUrl(cfg.Url(), settings, attempts, attemptDuration)
+}
+
+func ConnectWithTriesUsingUrl(url string, settings *ConnSettings, attempts int, attemptDuration time.Duration) (db *sqlx.DB, err error) {
+	for ; attempts > 0; attempts-- {
+		db, err = ConnectUsingUrl(url, settings)
+		if err == nil {
+			return
+		}
+		time.Sleep(attemptDuration)
+	}
+	return
+}
+
 func MigrateUp(cfg ConnConfig, migrationUrl string) error {
 	dbUrl := cfg.Url()
 
@@ -50,6 +54,7 @@ func MigrateUp(cfg ConnConfig, migrationUrl string) error {
 	if err != nil {
 		return fmt.Errorf("error migrate: %s", err)
 	}
+	defer migrator.Close()
 
 	err = migrator.Up()
 
