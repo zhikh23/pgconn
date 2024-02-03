@@ -11,7 +11,7 @@ test-short: ## Run only unit tests, tests without I/O dependencies.
 
 .PHONY: test-env-up
 test-env-up: ## Run test environment.
-	@docker compose -f docker-compose.test.yml up
+	@docker compose -f docker-compose.test.yml up -d
 
 .PHONY: test-env-down
 test-env-down: ## Down and cleanup test environment.
