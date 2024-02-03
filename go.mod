@@ -1,4 +1,4 @@
-module github.com/QuickDrone-Backend/pgconn
+module github.com/zhikh23/pgconn
 
 go 1.21
 
