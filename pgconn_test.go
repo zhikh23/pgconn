@@ -35,7 +35,7 @@ func TestConnectionInOneAttempt(t *testing.T) {
 		t.Skip("skipping test in short mode")
 	}
 
-	conn, err := pgconn.Connect(&testConfig, &testSettings)
+	conn, err := pgconn.Connect(testConfig.Url(), &testSettings)
 	require.NoError(t, err)
 	require.NotNil(t, conn)
 	defer conn.Close()
@@ -72,7 +72,7 @@ func TestConnectionInManyAttempts(t *testing.T) {
 	go func() {
 		defer wg.Done()
 
-		conn, err := pgconn.Connect(&testConfig, &testSettings)
+		conn, err := pgconn.Connect(testConfig.Url(), &testSettings)
 		require.NoError(t, err)
 		require.NotNil(t, conn)
 
@@ -85,7 +85,7 @@ func TestConnectionInManyAttempts(t *testing.T) {
 
 		time.Sleep(time.Second)
 
-		conn, err := pgconn.ConnectWithTries(&testConfig, &testSettings, 3, time.Second)
+		conn, err := pgconn.ConnectWithTries(testConfig.Url(), &testSettings, 3, time.Second)
 		require.NoError(t, err)
 		require.NotNil(t, conn)
 		conn.Close()
@@ -99,12 +99,12 @@ func TestMigrateUp(t *testing.T) {
 		t.Skip("skipping test in short mode")
 	}
 
-	err := pgconn.MigrateUp(testConfig, "file://./test_migrations")
+	err := pgconn.MigrateUp(testConfig.Url(), "file://./test_migrations")
 	if !errors.Is(err, migrate.ErrNoChange) {
 		require.NoError(t, err)
 	}
 
-	conn, err := pgconn.Connect(&testConfig, &testSettings)
+	conn, err := pgconn.Connect(testConfig.Url(), &testSettings)
 	require.NoError(t, err)
 	defer conn.Close()
 

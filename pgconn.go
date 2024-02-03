@@ -11,11 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func Connect(cfg *ConnConfig, settingsOrNil *ConnSettings) (db *sqlx.DB, err error) {
-	return ConnectUsingUrl(cfg.Url(), settingsOrNil)
-}
-
-func ConnectUsingUrl(url string, settingsOrNil *ConnSettings) (db *sqlx.DB, err error) {
+func Connect(url string, settingsOrNil *ConnSettings) (db *sqlx.DB, err error) {
 	db, err = sqlx.Open("pgx", url)
 	if err != nil {
 		return nil, err
@@ -32,13 +28,9 @@ func ConnectUsingUrl(url string, settingsOrNil *ConnSettings) (db *sqlx.DB, err 
 	return db, nil
 }
 
-func ConnectWithTries(cfg *ConnConfig, settings *ConnSettings, attempts int, attemptDuration time.Duration) (*sqlx.DB, error) {
-	return ConnectWithTriesUsingUrl(cfg.Url(), settings, attempts, attemptDuration)
-}
-
-func ConnectWithTriesUsingUrl(url string, settings *ConnSettings, attempts int, attemptDuration time.Duration) (db *sqlx.DB, err error) {
+func ConnectWithTries(url string, settings *ConnSettings, attempts int, attemptDuration time.Duration) (db *sqlx.DB, err error) {
 	for ; attempts > 0; attempts-- {
-		db, err = ConnectUsingUrl(url, settings)
+		db, err = Connect(url, settings)
 		if err == nil {
 			return
 		}
@@ -47,9 +39,7 @@ func ConnectWithTriesUsingUrl(url string, settings *ConnSettings, attempts int, 
 	return
 }
 
-func MigrateUp(cfg ConnConfig, migrationUrl string) error {
-	dbUrl := cfg.Url()
-
+func MigrateUp(dbUrl, migrationUrl string) error {
 	migrator, err := migrate.New(migrationUrl, dbUrl)
 	if err != nil {
 		return fmt.Errorf("error migrate: %s", err)
