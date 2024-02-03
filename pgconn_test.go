@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/QuickDrone-Backend/pgconn"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/require"
+	"github.com/zhikh23/pgconn"
 )
 
 var (
