@@ -9,14 +9,17 @@ test: ## Run all tests.
 test-short: ## Run only unit tests, tests without I/O dependencies.
 	@go test -short ./...
 
-.PHONY: test-env
+.PHONY: test-env-up
 test-env-up: ## Run test environment.
 	@docker compose -f docker-compose.test.yml up
+
+.PHONY: test-env-down
+test-env-down: ## Down and cleanup test environment.
+	@docker compose -f docker-compose.test.yml down -v
 
 .PHONY: cover
 cover: ## Show coverage in browser
 	@go tool cover -html=cover.out
-
 
 .PHONY: help
 help: ## Show help for each of the Makefile targets.

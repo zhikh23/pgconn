@@ -72,11 +72,11 @@ func TestConnectionInManyAttempts(t *testing.T) {
 	go func() {
 		defer wg.Done()
 
-		conn, err := pgconn.ConnectWithTries(&testConfig, &testSettings, 3, time.Second)
+		conn, err := pgconn.Connect(&testConfig, &testSettings)
 		require.NoError(t, err)
 		require.NotNil(t, conn)
 
-		time.Sleep(2*time.Second)
+		time.Sleep(time.Second)
 
 		conn.Close()
 	}()
@@ -99,13 +99,14 @@ func TestMigrateUp(t *testing.T) {
 		t.Skip("skipping test in short mode")
 	}
 
-	err := pgconn.MigrateUp(testConfig, "file:///home/zhikh/repos/my/qdrone/pgconn/test_migrations")
+	err := pgconn.MigrateUp(testConfig, "file://./test_migrations")
 	if !errors.Is(err, migrate.ErrNoChange) {
 		require.NoError(t, err)
 	}
 
 	conn, err := pgconn.Connect(&testConfig, &testSettings)
 	require.NoError(t, err)
+	defer conn.Close()
 
 	var id int
 	err = sqlx.Get(conn, &id, "SELECT id FROM test_table")
