@@ -11,12 +11,12 @@ const (
 )
 
 type ConnConfig struct {
-	Port            string
-	Host            string
-	User            string
-	Password        string
-	DbName          string
-	SslMode         string
+	Port     string
+	Host     string
+	User     string
+	Password string
+	DbName   string
+	SslMode  string
 }
 
 type ConnSettings struct {
@@ -31,7 +31,4 @@ func (cfg *ConnConfig) Url() string {
 		"%s://%s:%s/%s?sslmode=%s&user=%s&password=%s",
 		"postgres", cfg.Host, cfg.Port, cfg.DbName, cfg.SslMode, cfg.User, cfg.Password,
 	)
-//		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-//		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DbName, cfg.SslMode,
-//	)
 }
